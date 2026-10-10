@@ -1,22 +1,21 @@
 # Afterglow
 
-A JavaScript 3D street racing game with artistic night scenery, eight distinct cars, four neighborhoods, five weather settings, handbrake drifting, collision damage, breakable props, competitive AI, and LAN multiplayer.
+A JavaScript 3D street racing game with artistic night scenery, eight cars, four neighborhoods, five weather settings, drifting, collision damage, breakable props, competitive AI, and browser multiplayer for up to six players.
 
-## Run
+## Play
 
-Double-click the root `index.html` to play single-player directly in your browser. It contains the complete game, renderer, and styles and requires no server or installation.
+Open the root `index.html` directly in Chrome, Edge, or Firefox. No command window, installation, or local server is required. Single-player works offline.
 
-For LAN multiplayer, with Node.js installed, run from the repository root:
+## Multiplayer
 
-```sh
-npm start
-```
+1. Everyone opens their copy of the game.
+2. The host selects a car, map, and weather, opens **MULTIPLAYER**, and clicks **CREATE ROOM**.
+3. Share the five-character code. Friends select their own cars and enter the code to join.
+4. The host starts the race. AI fills unused seats.
 
-Keep the server terminal open while playing LAN races; Ctrl+C stops it. Use its printed HTTP address for multiplayer. No npm dependencies are required.
+This follows [Emberwake's networking flow](https://github.com/MLMecham/emberwake/tree/70654ae2984848fce23b44cf9fdecc26dbafdeff/src/net): PeerJS public signaling, reliable raw WebRTC data channels, a host-owned simulation, and STUN/TURN routing. HTTP/HTTPS pages also offer invite links; directly opened files share codes. Internet is required to find room codes, even on the same LAN. Some networks need a TURN relay; see [multiplayer setup](docs/MULTIPLAYER.md).
 
-## LAN multiplayer
-
-Other computers on the same network open the host's printed network address. Choose **LAN MULTIPLAYER**, create or join a room, and have the host start. Up to six players can race, with AI filling remaining seats. Allow Node.js on your private network if your firewall prompts.
+The lobby shows DIRECT or RELAY routes. The host pauses the race when switching tabs. Disconnected guests become AI; if the host leaves, everyone must reconnect to a new room.
 
 ## Controls
 
@@ -27,25 +26,11 @@ Other computers on the same network open the host's printed network address. Cho
 | Shift | Nitro |
 | P | Autopilot |
 | R | Recover to last checkpoint |
-| Escape | Pause; room host only in LAN |
+| Escape | Pause; host only in multiplayer |
 
-## Project layout
+## Development
 
-```text
-src/             Game, physics, models, scenery, weather, and LAN client
-  vendor/        Bundled Three.js
-public/          HTML template, styles, and classic JavaScript bundle
-server/          Authoritative LAN server and static file serving
-scripts/         Launcher and archive packaging
-tests/           Handling, racing, UI, and LAN integration tests
-dist/            Generated LAN download (ignored by Git)
-package.json     Commands available from the repository root
-index.html       Self-contained browser game
-```
-
-`src/street-game.js` is the browser entry. `src/simulation.js` shares race rules between browser and server; `src/free-driving.js` handles vehicle movement and contacts.
-
-## Validate and package
+`src/` contains game modules; `src/net/` contains WebRTC connections and relay configuration; `src/vendor/` includes Three.js and MIT-licensed PeerJS. `public/` contains the HTML template, styles, and generated browser bundle. `scripts/` contains build and packaging tools; `tests/` contains validation. `server/` is optional static hosting, with no game rooms or race simulation.
 
 ```sh
 npm test
@@ -53,6 +38,8 @@ npm run build
 npm run package:lan
 ```
 
-Tests cover handling, AI and race timing, UI startup with a stub renderer, prop breakage rendering, and a two-client LAN session. Packaging creates `dist/afterglow-lan.zip` using only JavaScript. Extract the archive and open `index.html` for single-player, or run `npm start` for LAN multiplayer. The generated download is served at `/afterglow-lan.zip` when present.
+Run `npm run build` after changing source or styles; commit the generated root HTML and browser bundle. Packaging produces `dist/afterglow-lan.zip`; extract it and open its `index.html`. Build and packaging use JavaScript without npm dependencies.
 
-After editing game source or styles, run `npm run build` to refresh the standalone HTML and public bundle. Commit both generated browser files so the game can be opened straight from a checkout.
+`npm start` optionally serves the same browser game over HTTP, useful for shareable invite links. Multiplayer does not require it.
+
+Automated tests cover physics, AI, static hosting, bundled startup, and peer connection flows using an in-memory transport. Live WebRTC across physical computers and NAT/relay routing require real-browser testing.

@@ -6,10 +6,14 @@ export function drive(s,input,dt,car,weather,offroad=false){
  s.steering+=(clamp(input.steer||0,-1,1)-s.steering)*(1-Math.exp(-dt*9));s.handbraking=!!input.handbrake;
  if(!input.nitro&&s.nitro>=15)s.nitroLocked=false;if(s.nitro<=0)s.nitroLocked=true;
  s.boosting=!!input.nitro&&!s.nitroLocked&&s.nitro>0&&longitudinal>8&&!s.handbraking;
- const acceleration=(input.gas?car.accel: -Math.sign(longitudinal)*2.5)+(s.boosting?9:0);
+ const acceleration=(input.gas?car.accel:0)+(s.boosting?9:0);
  longitudinal+=acceleration*dt;
+ if(!input.gas&&!s.boosting)longitudinal=Math.sign(longitudinal)*Math.max(0,Math.abs(longitudinal)-2.5*dt);
  if(input.brake){if(longitudinal>1)longitudinal=Math.max(0,longitudinal-34*dt);else longitudinal=Math.max(-12,longitudinal-12*dt);}
- if(s.handbraking)longitudinal*=Math.exp(-dt*.24);
+ // The handbrake removes kinetic energy from the whole velocity, including
+ // sideways motion. Releasing it never restores energy stored in a slide.
+ if(s.handbraking){const drag=Math.exp(-dt*.85);longitudinal*=drag;lateral*=drag;s.gripRecovery=0;}
+ else s.gripRecovery=Math.min(1,(s.gripRecovery??1)+dt*1.25);
  const limit=car.max*.93+(s.boosting?20:0);longitudinal=clamp(longitudinal,-12,limit);longitudinal*=Math.exp(-dt*(offroad?.32:.009));
  // Heading is integrated in world space. There is no road-tangent alignment,
  // curve speed clamp, lateral boundary, or invisible automatic steering.
@@ -24,7 +28,8 @@ export function drive(s,input,dt,car,weather,offroad=false){
  const oldWorld={x:forward.x*longitudinal+right.x*lateral,z:forward.z*longitudinal+right.z*lateral};
  longitudinal=oldWorld.x*nf.x+oldWorld.z*nf.z;lateral=oldWorld.x*nr.x+oldWorld.z*nr.z;
  const energy=longitudinal*longitudinal+lateral*lateral;lateral*=Math.exp(-dt*(s.handbraking?.5:8.5)*grip);
- longitudinal=Math.sign(longitudinal||1)*Math.sqrt(Math.max(0,energy-lateral*lateral));
+ const redirected=Math.max(0,energy-longitudinal*longitudinal-lateral*lateral);
+ longitudinal=Math.sign(longitudinal||1)*Math.sqrt(longitudinal*longitudinal+redirected*s.gripRecovery*s.gripRecovery);
  s.vx=nf.x*longitudinal+nr.x*lateral;s.vz=nf.z*longitudinal+nr.z*lateral;s.x+=s.vx*dt;s.z+=s.vz*dt;s.speed=Math.hypot(s.vx,s.vz);s.lateral=lateral;s.slip=Math.atan2(lateral,Math.max(1,Math.abs(longitudinal)));s.drifting=s.speed>12&&Math.abs(s.slip)>.10;
  if(s.boosting){s.nitro=Math.max(0,s.nitro-28*dt);if(!s.nitro){s.boosting=false;s.nitroLocked=true;}}else if(!input.nitro)s.nitro=Math.min(100,s.nitro+(s.drifting?18:6)*dt);
  s.roll+=(clamp(-s.yawRate*s.speed*.0025,-.11,.11)-s.roll)*(1-Math.exp(-dt*8));s.pitch+=(clamp(-(longitudinal-oldSpeed)/dt*.002,-.08,.1)-s.pitch)*(1-Math.exp(-dt*8));s.contact=Math.max(0,s.contact-dt*4);s.heave=Math.abs(s.roll)*.15+s.contact*.03;s.offroad=offroad;
@@ -43,7 +48,9 @@ export function carContact(a,b){const A=shape(a),B=shape(b),delta={x:B.x-A.x,z:B
    const point={x:(A.x+B.x)/2,z:(A.z+B.z)/2};recordImpact(a.state,a.spec,point.x,point.z,-closing);recordImpact(b.state,b.spec,point.x,point.z,-closing);
  }return true;
 }
-export function obstacleContact(driver,obstacle){const s=driver.state,dx=s.x-obstacle.x,dz=s.z-obstacle.z,c=Math.cos(obstacle.heading||0),sn=Math.sin(obstacle.heading||0),lx=dx*c-dz*sn,lz=dx*sn+dz*c,qx=clamp(lx,-obstacle.w/2,obstacle.w/2),qz=clamp(lz,-obstacle.l/2,obstacle.l/2),ex=lx-qx,ez=lz-qz,dist=Math.hypot(ex,ez),radius=driver.spec.width*.56;if(dist>=radius)return false;
- const nx=dist>0?ex/dist:Math.abs(lx)/(obstacle.w/2)>Math.abs(lz)/(obstacle.l/2)?Math.sign(lx)||1:0,nz=dist>0?ez/dist:nx?0:Math.sign(lz)||1,wx=nx*c+nz*sn,wz=-nx*sn+nz*c,depth=radius-dist+.02;
- s.x+=wx*depth;s.z+=wz*depth;const incoming=s.vx*wx+s.vz*wz;if(incoming<0){recordImpact(s,driver.spec,s.x-wx*radius,s.z-wz*radius,-incoming);s.vx-=wx*incoming*1.12;s.vz-=wz*incoming*1.12;s.vx*=.82;s.vz*=.82;}return true;
+export function obstacleContact(driver,obstacle){if(obstacle.broken)return false;const s=driver.state,A=shape(driver),heading=obstacle.heading||0,B={x:obstacle.x,z:obstacle.z,f:{x:Math.sin(heading),z:Math.cos(heading)},r:{x:-Math.cos(heading),z:Math.sin(heading)},halfW:obstacle.w/2,halfL:obstacle.l/2},delta={x:A.x-B.x,z:A.z-B.z};let depth=Infinity,normal;
+ for(const axis of [A.f,A.r,B.f,B.r]){const extent=q=>Math.abs(dot(q.f,axis))*q.halfL+Math.abs(dot(q.r,axis))*q.halfW,overlap=extent(A)+extent(B)-Math.abs(dot(delta,axis));if(overlap<=0)return false;if(overlap<depth){depth=overlap;const side=dot(delta,axis)>=0?1:-1;normal={x:axis.x*side,z:axis.z*side};}}
+ if(obstacle.breakable&&Math.hypot(s.vx,s.vz)>2){const speed=Math.hypot(s.vx,s.vz),loss=clamp(obstacle.mass/driver.spec.mass,.02,.12);obstacle.broken=true;obstacle.hit={vx:s.vx,vz:s.vz};recordImpact(s,driver.spec,obstacle.x,obstacle.z,speed*loss);s.vx*=1-loss;s.vz*=1-loss;s.speed=Math.hypot(s.vx,s.vz);return true;}
+ const wx=normal.x,wz=normal.z,radius=Math.abs(dot(A.f,normal))*A.halfL+Math.abs(dot(A.r,normal))*A.halfW;
+ s.x+=wx*(depth+.02);s.z+=wz*(depth+.02);const incoming=s.vx*wx+s.vz*wz;if(incoming<0){recordImpact(s,driver.spec,s.x-wx*radius,s.z-wz*radius,-incoming);s.vx-=wx*incoming*1.12;s.vz-=wz*incoming*1.12;s.vx*=.82;s.vz*=.82;}s.speed=Math.hypot(s.vx,s.vz);return true;
 }

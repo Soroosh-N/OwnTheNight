@@ -23,7 +23,7 @@ export function makeSimulation(config={}){
  const drivers=[];for(let slot=0;slot<6;slot++){const human=humans[slot],profile=human?profiles[2]:profiles[Math.max(0,slot-humans.length)],spec=cars[human?.car??[4,3,2,1,5][Math.max(0,slot-humans.length)%5]],d=-Math.floor(slot/2)*8,lane=slot%2?3.3:-3.3;
    drivers.push({id:human?.id||'ai'+slot,name:human?.name||profile.name,spec,state:createState(track,d,lane),human:!!human,profile,slot,d,checkpoint:0,nextGate:1,lapTimes:[],lapStart:0,finished:null,reactionClock:0,input:{gas:true},nitroSeconds:0,recoverCooldown:0});
  }
- return {track,weather,layout,drivers,elapsed:0,countdown:3.5,mode:'race',paused:false,contacts:0,config};
+ return {track,weather,layout,drivers,elapsed:0,countdown:3.5,mode:'race',paused:false,contacts:0,brokenProps:{},config};
 }
 export function resetToRoad(sim,driver){if(driver.recoverCooldown>0)return;const d=driver.checkpoint*sim.track.length/32,damage=driver.state.damage,impacts=driver.state.impacts;driver.state=createState(sim.track,d,driver.slot%2?3.3:-3.3);driver.state.damage=damage;driver.state.impacts=impacts;driver.d=d;driver.recoverCooldown=5;}
 export function stepSimulation(sim,dt,inputs={}){if(sim.mode!=='race'||sim.paused)return;if(sim.countdown>0){sim.countdown-=dt;return;}sim.elapsed+=dt;
@@ -32,7 +32,7 @@ export function stepSimulation(sim,dt,inputs={}){if(sim.mode!=='race'||sim.pause
    if(input.recover){resetToRoad(sim,driver);input={};}drive(driver.state,input,dt,driver.spec,sim.weather,Math.abs(driver.state.lane)>11);
    const p=sim.track.project(driver.state.x,driver.state.z,driver.d);driver.d=p.d;driver.state.lane=p.lane;driver.state.yaw=wrap(Math.atan2(p.frame.v.x,p.frame.v.z)-driver.state.heading);
    if(driver.state.boosting)driver.nitroSeconds+=dt;
-   for(const obstacle of sim.layout.obstacles){if(Math.abs(driver.state.x-obstacle.x)>obstacle.w+5||Math.abs(driver.state.z-obstacle.z)>obstacle.l+5)continue;if(obstacleContact(driver,obstacle))sim.contacts++;}
+   for(const obstacle of sim.layout.obstacles){if(obstacle.broken||Math.hypot(driver.state.x-obstacle.x,driver.state.z-obstacle.z)>Math.hypot(obstacle.w,obstacle.l)/2+4)continue;if(obstacleContact(driver,obstacle)){sim.contacts++;if(obstacle.broken)sim.brokenProps[obstacle.id]={time:sim.elapsed,...obstacle.hit};}}
    const gateD=driver.nextGate*sim.track.length/32,gate=sim.track.sample(gateD),dx=driver.state.x-gate.p.x,dz=driver.state.z-gate.p.z;
    if(Math.hypot(dx,dz)<29&&driver.d>gateD-27){driver.checkpoint=driver.nextGate;driver.nextGate++;if(driver.checkpoint%32===0){driver.lapTimes.push(sim.elapsed-driver.lapStart);driver.lapStart=sim.elapsed;if(driver.checkpoint>=96){driver.finished=sim.elapsed;driver.state.boosting=false;}}}
  }
@@ -40,4 +40,4 @@ export function stepSimulation(sim,dt,inputs={}){if(sim.mode!=='race'||sim.pause
  if(sim.drivers.filter(d=>d.human).every(d=>d.finished!=null))sim.mode='finished';
 }
 export function standings(sim){return sim.drivers.slice().sort((a,b)=>{if(a.finished!=null&&b.finished!=null)return a.finished-b.finished;if(a.finished!=null)return -1;if(b.finished!=null)return 1;return (b.checkpoint-a.checkpoint)||(b.d-a.d);});}
-export function snapshot(sim){return {map:maps.indexOf(sim.track.definition),weather:sim.weather.id,elapsed:sim.elapsed,countdown:sim.countdown,mode:sim.mode,paused:sim.paused,contacts:sim.contacts,drivers:sim.drivers.map(d=>({id:d.id,name:d.name,car:cars.indexOf(d.spec),human:d.human,skill:d.human?'PLAYER':d.profile.skill,slot:d.slot,d:d.d,state:d.state,checkpoint:d.checkpoint,nextGate:d.nextGate,lapTimes:d.lapTimes,finished:d.finished,nitroSeconds:d.nitroSeconds,recoverCooldown:d.recoverCooldown}))};}
+export function snapshot(sim){return {map:maps.indexOf(sim.track.definition),weather:sim.weather.id,elapsed:sim.elapsed,countdown:sim.countdown,mode:sim.mode,paused:sim.paused,contacts:sim.contacts,brokenProps:sim.brokenProps,drivers:sim.drivers.map(d=>({id:d.id,name:d.name,car:cars.indexOf(d.spec),human:d.human,skill:d.human?'PLAYER':d.profile.skill,slot:d.slot,d:d.d,state:d.state,checkpoint:d.checkpoint,nextGate:d.nextGate,lapTimes:d.lapTimes,finished:d.finished,nitroSeconds:d.nitroSeconds,recoverCooldown:d.recoverCooldown}))};}

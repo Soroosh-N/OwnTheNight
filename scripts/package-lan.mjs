@@ -9,7 +9,7 @@ const table=Array.from({length:256},(_,n)=>{for(let i=0;i<8;i++)n=n&1?0xedb88320
 function crc32(data){let n=0xffffffff;for(const b of data)n=table[(n^b)&255]^(n>>>8);return (n^0xffffffff)>>>0;}
 function walk(folder){return fs.readdirSync(folder,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name)).flatMap(e=>e.isDirectory()?walk(path.join(folder,e.name)):[path.join(folder,e.name)]);}
 const files=['src','public','server','scripts','tests'].flatMap(folder=>walk(path.join(root,folder))).map(p=>({name:path.relative(root,p).split(path.sep).join('/'),data:fs.readFileSync(p)}));
-for(const name of ['start-game.cmd','README.md','package.json','.gitignore','.gitattributes'])files.push({name,data:fs.readFileSync(path.join(root,name))});
+for(const name of ['index.html','README.md','package.json','.gitignore','.gitattributes'])files.push({name,data:fs.readFileSync(path.join(root,name))});
 const local=[],central=[];let offset=0;
 for(const file of files){
  const name=Buffer.from(file.name),data=deflateRawSync(file.data),crc=crc32(file.data);

@@ -6,7 +6,7 @@ const post=async(route,data)=>{const res=await fetch(base+'/api/'+route,{method:
 const controllers=[];
 try{
  assert.equal((await (await fetch(base+'/api/info')).json()).lan,true);
- assert.match(await (await fetch(base)).text(),/street-game.js/);
+ assert.match(await (await fetch(base)).text(),/game.bundle.js/);
  const host=(await post('create',{name:'HOST',car:0,map:1,weather:'rain'})).data;
  const guest=(await post('join',{name:'GUEST',car:2,room:host.room})).data;
  assert.equal((await post('start',{token:guest.token})).status,403);

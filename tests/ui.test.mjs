@@ -12,6 +12,9 @@ const events={};globalThis.addEventListener=(n,f)=>events[n]=f;let frame,rendere
 const source=fs.readFileSync(new URL(process.env.OWN_THE_NIGHT_BUNDLE_TEST==='1'?'../public/game.bundle.js':'../src/street-game.js',import.meta.url),'utf8').replace(/'\.\/(.+?\.js)'/g,(_,name)=>JSON.stringify(new URL('../src/'+name,import.meta.url).href)).replace("new THREE.WebGLRenderer({canvas:$('world'),antialias:true,powerPreference:'high-performance'})","({setPixelRatio(){},setSize(){},render(s){captureRaceScene(s);}})");
 await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 assert.equal(el('cars').children.length,8);assert.equal(el('maps').children.length,4);
+el('choosecreate').onclick();assert.equal(el('createview').hidden,false);assert.equal(el('joinview').hidden,true);assert.equal(el('lanchoice').hidden,true);
+el('lanback').onclick();assert.equal(el('lanchoice').hidden,false);assert.equal(el('lanconnect').hidden,true);assert.equal(el('lanlobby').hidden,true);
+el('choosejoin').onclick();assert.equal(el('joinview').hidden,false);assert.equal(el('createview').hidden,true);assert.equal(el('lanformtitle').textContent,'JOIN ROOM.');el('lanback').onclick();
 for(let i=0;i<8;i++){el('cars').children[i].onclick();assert.equal(racingDiagnostics().selectedCar,cars[i].id);}
 for(let i=0;i<4;i++){el('maps').children[i].onclick();assert.equal(racingDiagnostics().selectedMap,maps[i].id);frame(16+i*16);let spots=0,points=0;renderedScene.traverse(o=>{if(o.isSpotLight)spots++;if(o.isPointLight)points++;});assert.equal(spots,6);assert.ok(points>=6);}
 el('start').onclick();assert.equal(racingDiagnostics().mode,'race');el('pause').onclick();const before=racingDiagnostics().elapsed;frame(100);assert.equal(racingDiagnostics().elapsed,before);el('resume').onclick();assert.equal(racingDiagnostics().paused,false);el('garagebtn').onclick();assert.equal(racingDiagnostics().mode,'garage');

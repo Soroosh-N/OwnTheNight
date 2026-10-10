@@ -11,10 +11,10 @@ server.on('error',error=>{
 });
 server.on('listening',()=>{
  const url=`http://localhost:${port}`;
- console.log(`Afterglow is ready: ${url}`);
+ console.log(`Own the Night is ready: ${url}`);
  console.log('Keep this terminal open while playing. Ctrl+C stops the game.');
  for(const list of Object.values(os.networkInterfaces()))for(const address of list||[])if(address.family==='IPv4'&&!address.internal)console.log(`Optional hosting: http://${address.address}:${port}`);
- if(process.platform==='win32'&&process.env.AFTERGLOW_NO_OPEN!=='1'){
+ if(process.platform==='win32'&&process.env.OWN_THE_NIGHT_NO_OPEN!=='1'){
   const browser=spawn('cmd.exe',['/c','start','',url],{windowsHide:true,stdio:'ignore'});
   browser.on('error',()=>console.log('Open the address above in your browser.'));
  }

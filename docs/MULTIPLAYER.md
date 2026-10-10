@@ -16,7 +16,7 @@ The host pauses the entire race when switching tabs or opening the pause menu. A
 
 Internet is required to register and find room codes, even when both computers are on the same LAN. A local Node server is not required. Some routers block direct connections; shared public TURN servers are not guaranteed to be available.
 
-For your own relay, configure `relayConfig.meteredApp` and `relayConfig.meteredKey` in `src/net/relay.js`, then run `npm run build`. Use your own Metered TURN credential API key, not an administrative account credential. The browser bundle embeds these values. Relay routes are fetched and cached for 30 minutes. `globalThis.AFTERGLOW_PEER_OPTS` can override PeerJS signaling options for a private PeerServer.
+For your own relay, configure `relayConfig.meteredApp` and `relayConfig.meteredKey` in `src/net/relay.js`, then run `npm run build`. Use your own Metered TURN credential API key, not an administrative account credential. The browser bundle embeds these values. Relay routes are fetched and cached for 30 minutes. `globalThis.OWN_THE_NIGHT_PEER_OPTS` can override PeerJS signaling options for a private PeerServer.
 
 ## Reference and dependencies
 

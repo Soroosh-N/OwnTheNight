@@ -19,5 +19,5 @@ for(const file of files){
 }
 const directory=Buffer.concat(central),end=Buffer.alloc(22);end.writeUInt32LE(0x06054b50);end.writeUInt16LE(files.length,8);end.writeUInt16LE(files.length,10);end.writeUInt32LE(directory.length,12);end.writeUInt32LE(offset,16);
 fs.mkdirSync(path.join(root,'dist'),{recursive:true});
-fs.writeFileSync(path.join(root,'dist/afterglow-lan.zip'),Buffer.concat([...local,directory,end]));
-console.log(`Packaged ${files.length} files into dist/afterglow-lan.zip`);
+fs.writeFileSync(path.join(root,'dist/own-the-night-lan.zip'),Buffer.concat([...local,directory,end]));
+console.log(`Packaged ${files.length} files into dist/own-the-night-lan.zip`);

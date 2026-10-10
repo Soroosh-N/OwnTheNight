@@ -1,4 +1,4 @@
-# Own the Night — Afterglow
+# Own the Night
 
 A browser-based 3D street racing game with artistic night scenery, handbrake drifting, and competitive races through lived-in neighborhoods. Built with JavaScript and Three.js.
 
@@ -52,9 +52,9 @@ Node.js is required for development commands. There are no npm dependencies to i
 | `npm test` | Run handling, racing, peer, hosting, UI, and bundle checks |
 | `npm run test:browser` | Check the generated standalone browser bundle |
 | `npm start` | Optionally serve the game over HTTP and print its address |
-| `npm run package:lan` | Build and create `dist/afterglow-lan.zip` |
+| `npm run package:lan` | Build and create `dist/own-the-night-lan.zip` |
 
-Run `npm run build` after changing source or styles; commit the generated root HTML and browser bundle. Packaging produces `dist/afterglow-lan.zip`; extract it and open its `index.html`. Build and packaging use JavaScript without npm dependencies.
+Run `npm run build` after changing source or styles; commit the generated root HTML and browser bundle. Packaging produces `dist/own-the-night-lan.zip`; extract it and open its `index.html`. Build and packaging use JavaScript without npm dependencies.
 
 The optional HTTP server is useful for shareable invite links. It does not manage multiplayer rooms or simulate races.
 

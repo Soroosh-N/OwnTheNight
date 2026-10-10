@@ -53527,7 +53527,7 @@ function createMultiplayerClient(onUpdate,onError,options={}){
   connection.on('close',()=>{clearTimeout(greetingTimer);links.delete(link.id||connection);inputs.delete(link.id);if(room){room.players=room.players.filter(p=>p.id!==link.id);if(sim){const driver=sim.drivers.find(d=>d.id===link.id);if(driver){driver.human=false;driver.name+=' (AI)';}}}if(!disposed)publish();});
   connection.on('error',error=>onError(messageFor(error)));
  }
- async function openPeer(id){if(!Peer)throw Error('WebRTC multiplayer library is unavailable. Use a current Chrome, Edge or Firefox browser.');const config={debug:0,config:{iceServers:await iceServers()},...(globalThis.AFTERGLOW_PEER_OPTS||{})};
+ async function openPeer(id){if(!Peer)throw Error('WebRTC multiplayer library is unavailable. Use a current Chrome, Edge or Firefox browser.');const config={debug:0,config:{iceServers:await iceServers()},...(globalThis.OWN_THE_NIGHT_PEER_OPTS||{})};
   return new Promise((resolve,reject)=>{let settled=false;const timer=setTimeout(()=>{if(!settled){settled=true;peer?.destroy();reject(Error('Room service timed out. Check your internet connection.'));}},20000);
    peer=id?new Peer(id,config):new Peer(config);
    peer.on('open',()=>{if(!settled){settled=true;clearTimeout(timer);resolve(peer);}});

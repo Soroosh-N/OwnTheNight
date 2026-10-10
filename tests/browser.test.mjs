@@ -10,6 +10,6 @@ new vm.Script(scripts[0][1].replace(/<\\\/script/g,'</script'));
 const bundle=fs.readFileSync(new URL('../public/game.bundle.js',import.meta.url),'utf8');
 assert.equal(scripts[0][1].replace(/<\\\/script/g,'</script'),bundle,'Root HTML contains the exact tested game bundle');
 assert.ok(!/^\s*(import|export)\s/m.test(bundle),'Classic bundle contains no ES module declarations');
-const result=spawnSync(process.execPath,[fileURLToPath(new URL('./ui.test.mjs',import.meta.url))],{env:{...process.env,AFTERGLOW_BUNDLE_TEST:'1'},encoding:'utf8'});
+const result=spawnSync(process.execPath,[fileURLToPath(new URL('./ui.test.mjs',import.meta.url))],{env:{...process.env,OWN_THE_NIGHT_BUNDLE_TEST:'1'},encoding:'utf8'});
 assert.equal(result.status,0,result.stdout+result.stderr);
 console.log(result.stdout.trim());console.log('PASS: self-contained index.html, classic-script syntax and actual bundled game startup');

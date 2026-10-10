@@ -1,5 +1,5 @@
 import {spawn} from 'node:child_process';
-import {createLanServer} from './lan-server.mjs';
+import {createLanServer} from '../server/lan-server.mjs';
 import os from 'node:os';
 
 const server=createLanServer();

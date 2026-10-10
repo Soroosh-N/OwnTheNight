@@ -1,0 +1,12 @@
+{
+  "name": "afterglow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone JavaScript 3D street racing game with LAN multiplayer",
+  "scripts": {
+    "start": "node scripts/start-game.mjs",
+    "test": "node tests/handling.test.mjs && node tests/racing.test.mjs && node tests/ui.test.mjs && node tests/lan.test.mjs",
+    "package:lan": "node scripts/package-lan.mjs"
+  }
+}

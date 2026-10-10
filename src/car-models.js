@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 const material=color=>new THREE.MeshStandardMaterial({color,roughness:.48,metalness:.25,flatShading:true});
 function shell(sections,mat,parent){const vertices=[],indices=[];
  for(const [z,w,b,t] of sections)vertices.push(-w,b,z,w,b,z,w,t,z,-w,t,z);

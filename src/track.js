@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 export function createTrack(def){
  const points=def.points.map(([x,z])=>new THREE.Vector3(x,0,z));
  const rough=new THREE.CatmullRomCurve3(points,true,'centripetal');

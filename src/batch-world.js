@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 // Consolidate static scenery into material batches to keep dense streets fast.
 export function batchWorld(root){root.updateMatrixWorld(true);const groups=new Map();root.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||Array.isArray(o.material))return;for(let parent=o;parent;parent=parent.parent)if(parent.userData.breakable)return;const m=o.material,key=[m.type,m.color?.getHex(),m.roughness,m.metalness,m.opacity,m.transparent,m.depthWrite,m.side,m.map?.uuid].join('/');if(!groups.has(key))groups.set(key,{material:m,objects:[]});groups.get(key).objects.push(o);});
  for(const {material,objects} of groups.values()){if(objects.length<2)continue;const positions=[],normals=[],uvs=[],indices=[];let offset=0;const v=new THREE.Vector3(),normal=new THREE.Vector3();

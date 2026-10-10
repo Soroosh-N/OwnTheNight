@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 import {cars,maps} from './catalog.js';
 import {createTrack} from './track.js';
 import {makeCar,animateCar} from './car-models.js';

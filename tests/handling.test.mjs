@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import {cars,maps} from './dist/catalog.js';
-import {createTrack} from './dist/track.js';
-import {createState,drive,obstacleContact} from './dist/free-driving.js';
-import {weatherPresets} from './dist/weather.js';
-import {makeSimulation,stepSimulation,snapshot} from './dist/simulation.js';
+import {cars,maps} from '../src/catalog.js';
+import {createTrack} from '../src/track.js';
+import {createState,drive,obstacleContact} from '../src/free-driving.js';
+import {weatherPresets} from '../src/weather.js';
+import {makeSimulation,stepSimulation,snapshot} from '../src/simulation.js';
 const dt=1/60,track=createTrack(maps[0]),spec=cars[0],weather=weatherPresets[0];
 for(const steer of [0,1,-1]){
  const s=createState(track);s.heading=0;s.vx=0;s.vz=50;

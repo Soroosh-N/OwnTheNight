@@ -6,5 +6,5 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-node start-game.mjs
+node scripts/start-game.mjs
 if errorlevel 1 pause

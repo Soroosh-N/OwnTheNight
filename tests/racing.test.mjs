@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {cars,maps} from './dist/catalog.js';
-import {createTrack} from './dist/track.js';
-import {createState,drive,carContact,recordImpact} from './dist/free-driving.js';
-import {makeSimulation,stepSimulation,standings,botInput,profiles} from './dist/simulation.js';
-import {weatherPresets} from './dist/weather.js';
-import {makeCar} from './dist/car-models.js';
-import {updateDamage} from './dist/damage.js';
+import {cars,maps} from '../src/catalog.js';
+import {createTrack} from '../src/track.js';
+import {createState,drive,carContact,recordImpact} from '../src/free-driving.js';
+import {makeSimulation,stepSimulation,standings,botInput,profiles} from '../src/simulation.js';
+import {weatherPresets} from '../src/weather.js';
+import {makeCar} from '../src/car-models.js';
+import {updateDamage} from '../src/damage.js';
 const dt=1/60,track=createTrack(maps[0]),clear=weatherPresets[0];
 for(const side of [-1,1]){const s=createState(track);s.vx=Math.sin(s.heading)*45;s.vz=Math.cos(s.heading)*45;for(let i=0;i<40;i++)drive(s,{steer:side,gas:true},dt,cars[4],clear);const p=track.project(s.x,s.z,0);assert.ok(side*Math.atan2(Math.sin(Math.atan2(track.sample(0).v.x,track.sample(0).v.z)-s.heading),Math.cos(Math.atan2(track.sample(0).v.x,track.sample(0).v.z)-s.heading))>0,'Steering turns toward the requested side');}
 const untouched=createState(track);const startHeading=untouched.heading;for(let i=0;i<1500;i++)drive(untouched,{gas:true},dt,cars[4],clear);assert.equal(untouched.heading,startHeading);assert.ok(Math.abs(track.project(untouched.x,untouched.z,0).lane)>40,'No input does not follow the route or stay on the road');

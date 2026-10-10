@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 import {streetLayout} from './street-layout.js';
 import {batchWorld} from './batch-world.js';
 const standard=c=>new THREE.MeshStandardMaterial({color:c,roughness:.86,flatShading:true});

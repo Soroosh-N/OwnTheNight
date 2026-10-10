@@ -4,8 +4,9 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {makeSimulation,stepSimulation,snapshot} from './dist/simulation.js';
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'dist');
+import {makeSimulation,stepSimulation,snapshot} from '../src/simulation.js';
+const projectRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const root=path.join(projectRoot,'public');
 export function createLanServer(){
  const rooms=new Map(),sessions=new Map();const token=()=>crypto.randomBytes(18).toString('hex');
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
@@ -28,7 +29,7 @@ export function createLanServer(){
      if(url.pathname==='/api/leave'){room.players=room.players.filter(x=>x!==p);sessions.delete(key);for(const stream of p.streams)stream.end();if(p.id===room.host){room.host=room.players[0]?.id;if(room.sim){room.sim.paused=true;room.sim.mode='finished';}}if(!room.players.length)rooms.delete(room.code);else emit(room);return json(res,200,{ok:true});}
      return json(res,404,{error:'Unknown action.'});
    }
-   let requested;try{requested=decodeURIComponent(url.pathname);}catch{return json(res,400,{error:'Invalid path'});}const target=path.resolve(root,'.'+(requested==='/'?'/index.html':requested));if(!target.startsWith(root+path.sep))return json(res,403,{error:'Invalid path'});
+   let requested;try{requested=decodeURIComponent(url.pathname);}catch{return json(res,400,{error:'Invalid path'});}const source=requested.startsWith('/src/'),base=source?path.join(projectRoot,'src'):root;const target=requested==='/afterglow-lan.zip'?path.join(projectRoot,'dist/afterglow-lan.zip'):path.resolve(base,'.'+(source?requested.slice(4):requested==='/'?'/index.html':requested));if(requested!=='/afterglow-lan.zip'&&!target.startsWith(base+path.sep))return json(res,403,{error:'Invalid path'});
    if(!fs.existsSync(target)||!fs.statSync(target).isFile())return json(res,404,{error:'Not found'});const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.zip':'application/zip'}[path.extname(target)]||'application/octet-stream';res.writeHead(200,{'Content-Type':mime,'Cache-Control':'no-cache'});fs.createReadStream(target).pipe(res);
  }catch(e){json(res,400,{error:e.message});}});
  let ticks=0;const tick=setInterval(()=>{for(const room of rooms.values()){if(room.sim?.mode==='race'){const inputs={};for(const p of room.players)inputs[p.id]=Date.now()-p.inputAt<1500?p.input:{brake:true};stepSimulation(room.sim,1/60,inputs);}if(ticks%3===0)emit(room);}ticks++;},1000/60);

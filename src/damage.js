@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from './vendor/three.js';
 export function prepareDamage(car){car.userData.damageMeshes=[];car.userData.chassis.traverse(o=>{if(!o.isMesh||!o.geometry.attributes.position)return;o.material=o.material.clone();o.updateMatrix();car.userData.damageMeshes.push({mesh:o,original:o.geometry.attributes.position.array.slice(),originalColor:o.material.color?.clone()});});car.userData.lastDamage=-1;car.userData.scratchGroup=new THREE.Group();car.userData.chassis.add(car.userData.scratchGroup);}
 export function updateDamage(car,state){const data=car.userData;if(!data.damageMeshes)prepareDamage(car);const serial=state.impactSerial||0;if(data.lastDamage===serial)return;data.lastDamage=serial;
  const p=new THREE.Vector3(),inverse=new THREE.Matrix4();for(const part of data.damageMeshes){const mesh=part.mesh,attr=mesh.geometry.attributes.position;attr.array.set(part.original);inverse.copy(mesh.matrix).invert();let struck=0;

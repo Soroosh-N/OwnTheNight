@@ -1,0 +1,3 @@
+if(location.protocol==='file:'){
+ document.body.innerHTML='<main style="position:fixed;inset:0;display:grid;place-content:center;padding:32px;background:#101b32;color:#eef4ff;font:18px/1.6 sans-serif"><h1>Start the game server</h1><p>Close this page and double-click <b>start-game.cmd</b><br>in the repository root.</p><p>The launcher opens the game automatically.<br>Keep its terminal open while playing.</p><p>Or run <code>npm start</code> in that folder,<br>then open the HTTP address it prints.</p><a style="color:#e5f58c" href="http://localhost:8080">Open a server already running on port 8080</a></main>';
+}

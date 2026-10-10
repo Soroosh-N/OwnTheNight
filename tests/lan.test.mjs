@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createLanServer} from './lan-server.mjs';
+import {createLanServer} from '../server/lan-server.mjs';
 const server=createLanServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base='http://127.0.0.1:'+server.address().port;
 const post=async(route,data)=>{const res=await fetch(base+'/api/'+route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return {status:res.status,data:await res.json()};};
